@@ -1,71 +1,87 @@
 import time
 import os
 
+class Tarefa:
+    def __init__(self, descricao, status = "pendente"):
+        self.descricao = descricao
+        self.status = status
+    def marcar_como_concluido(self):
+        self.status = "concluido"
+    def __str__(self):
+        return f"[{self.status}] - {self.descricao}"
+    
 tarefas = []
 
-def verificação():
+def limpar_tela():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
+def carregar_tarefas():
     arquivo = 'tarefas.txt'
 
     if os.path.exists(arquivo):
         with open(arquivo, "r") as f:
             infos = f.read().splitlines()
+            lista_objetos = []
+            
+            for linha_atual in infos:
+                descricao, status = linha_atual.split(';')
+                tarefa1 = Tarefa(descricao, status)
+                lista_objetos.append(tarefa1)
+            return lista_objetos
 
-        print("Tarefas carregadas com sucesso!")
-        time.sleep(1)
-        return infos
     else:
-        print("Nenhuma tarefa para ser carregada!")
-        time.sleep(1)
+        print("Nenhum arquivo encontrado.")
         return []
- 
-def adicionar_tarefa(tarefas):
-    nova_tarefa = input("Informe a nova tarefa:\n>>> ")
-    tarefas.append(nova_tarefa)
-    print("Nova tarefa adicionada com sucesso")
-    time.sleep(1)
 
-def listar_tarefa(tarefas):
+def salvar_tarefas(tarefas):
+    with open('tarefas.txt', 'w') as f:
+        for item in tarefas:
+            descricao = item.descricao
+            status = item.status
+            f.write(f"{descricao};{status}\n")
+
+def listar_tarefas(tarefas):
     if not tarefas:
-        print("Nenhuma tarefa cadastrada.")
+        print("Nenhuma tarefas cadastrada")
         time.sleep(1)
     else:
-        print("----- Tarefas -----")
         for indice, item in enumerate(tarefas):
-            print(f"{indice + 1}. {item}")
+            print(f"{indice + 1}, {item}")
         time.sleep(2)
 
-def remover_tarefa(tarefas):
-    listar_tarefa(tarefas)
+def concluir_tarefa(tarefas):
+    listar_tarefas(tarefas)
     if not tarefas:
         return
-    
-    try: 
+    try:
         time.sleep(1)
-        remover_num = int(input("Qual o número da tarefa que deseja remover?\n>>> "))
-        remover = remover_num - 1
-        tarefas.pop(remover)
-        print("Tarefa removida com sucesso!")
+        concluir_num = int(input("Qual o número da tarefa que deseja concluir?\n>>> "))
+        indice = concluir_num - 1
+        objeto_tarefa = tarefas[indice]
+        objeto_tarefa.marcar_como_concluido()
+        print("Tarefa concluida com sucesso!")
         time.sleep(1)
     except ValueError:
-        print("Erro: Entrada inválida. Por favor, digite um número.")
+        print("Erro: Entrada inválida! Por favor, digite um número.")
         time.sleep(1)
     except IndexError:
         print("Erro: Essa tarefa não existe.")
         time.sleep(1)
-def limpar_tela():
-    os.system('cls' if os.name == 'nt' else 'clear')
-def salvar_tarefas(tarefas):
-    with open('tarefas.txt', 'w') as f:
-        for item in tarefas:
-            f.write(item + '\n')
-info = verificação()
+
+def adicionar_tarefa(tarefas):
+    descricao = input("Informe a nova tarefa:\n>>> ")
+    nova_tarefa = Tarefa(descricao)
+    tarefas.append(nova_tarefa)
+    time.sleep(1) 
+
+info = carregar_tarefas()
+
 while True:
     limpar_tela()
     print("***** To do List *****")
     print("[1] Adicionar Tarefa")
     print("[2] Listar Tarefas")
-    print("[3] Remover Tarefas")
+    print("[3] Concluir Tarefas")
     print("[4] Sair")
 
     escolha = input("Digite sua opção:\n>> ")
@@ -76,10 +92,10 @@ while True:
         salvar_tarefas(info)
     elif escolha == "2":
         print("Opção escolhida: Listar tarefas existentes.")
-        listar_tarefa(info)
+        listar_tarefas(info)
     elif escolha == "3":
-        print("Opção escolhida: Remover tarefa.")
-        remover_tarefa(info)
+        print("Opção escolhida: Concluir tarefa.")
+        concluir_tarefa(info)
         salvar_tarefas(info)
     elif escolha == "4":
         print("Saindo do programa...")
